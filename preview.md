@@ -24,6 +24,3 @@ Example: selecting *"Slut!" (Taylor's Version)* by Taylor Swift filters every vi
 )
 Selecting an artist (e.g. Addison Rae) surfaces their **distinct song count**, **average popularity**, **most popular song** ("Diet Pepsi"), and a **breakdown of songs by album type**.
 
-![Artists Page ](<img width="1117" height="628" alt="image" src="https://github.com/user-attachments/assets/785d0bee-b1e5-48cc-a08a-1c5889d0b7e8" />
-)
-Another example: selecting  shows **10 distinct songs**, a per-song popularity ranking (Carnival, Burn, Field Trip, etc.), and a **popularity trend across release months**, illustrating how the same visuals dynamically re-render per artist.

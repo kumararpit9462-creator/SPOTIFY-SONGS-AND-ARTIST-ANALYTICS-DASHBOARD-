@@ -10,7 +10,7 @@ An end-to-end Power BI analytics solution built on a Spotify tracks dataset, cov
   <img src="https://img.shields.io/badge/License-MIT-green" />
 </p>
 
-**Demo:** [Watch the walkthrough](https://youtu.be/MjeDkDHJqzc?si=0qx3-Uplxv7RXt0O)
+
 
 ---
 

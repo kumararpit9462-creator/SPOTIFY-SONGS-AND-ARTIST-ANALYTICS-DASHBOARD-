@@ -1,0 +1,1570 @@
+DEFINE
+
+/* =========================================================
+   1. BASIC DATASET KPIs
+   ========================================================= */
+
+MEASURE 'spotify-top-50-world'[Total Chart Entries] =
+    COUNTROWS('spotify-top-50-world')
+
+MEASURE 'spotify-top-50-world'[Chart Days] =
+    DISTINCTCOUNT('spotify-top-50-world'[date])
+
+MEASURE 'spotify-top-50-world'[Average Entries Per Day] =
+    DIVIDE(
+        [Total Chart Entries],
+        [Chart Days]
+    )
+
+MEASURE 'spotify-top-50-world'[Distinct Songs] =
+    DISTINCTCOUNT('spotify-top-50-world'[song])
+
+MEASURE 'spotify-top-50-world'[Distinct Artists] =
+    DISTINCTCOUNT('spotify-top-50-world'[artist])
+
+MEASURE 'spotify-top-50-world'[Distinct Albums] =
+    DISTINCTCOUNT('spotify-top-50-world'[album_cover_url])
+
+MEASURE 'spotify-top-50-world'[Songs Per Artist] =
+    DIVIDE(
+        [Distinct Songs],
+        [Distinct Artists]
+    )
+
+MEASURE 'spotify-top-50-world'[Artists Per Song] =
+    DIVIDE(
+        [Distinct Artists],
+        [Distinct Songs]
+    )
+
+MEASURE 'spotify-top-50-world'[Chart Coverage Days] =
+    DATEDIFF(
+        MIN('spotify-top-50-world'[date]),
+        MAX('spotify-top-50-world'[date]),
+        DAY
+    ) + 1
+
+
+/* =========================================================
+   2. CHART POSITION
+   ========================================================= */
+
+MEASURE 'spotify-top-50-world'[Average Chart Position] =
+    AVERAGE('spotify-top-50-world'[position])
+
+MEASURE 'spotify-top-50-world'[Median Chart Position] =
+    MEDIAN('spotify-top-50-world'[position])
+
+MEASURE 'spotify-top-50-world'[Best Chart Position] =
+    MIN('spotify-top-50-world'[position])
+
+MEASURE 'spotify-top-50-world'[Worst Chart Position] =
+    MAX('spotify-top-50-world'[position])
+
+MEASURE 'spotify-top-50-world'[Number 1 Entries] =
+    CALCULATE(
+        COUNTROWS('spotify-top-50-world'),
+        'spotify-top-50-world'[position] = 1
+    )
+
+MEASURE 'spotify-top-50-world'[Top 5 Entries] =
+    CALCULATE(
+        COUNTROWS('spotify-top-50-world'),
+        'spotify-top-50-world'[position] <= 5
+    )
+
+MEASURE 'spotify-top-50-world'[Top 10 Entries] =
+    CALCULATE(
+        COUNTROWS('spotify-top-50-world'),
+        'spotify-top-50-world'[position] <= 10
+    )
+
+MEASURE 'spotify-top-50-world'[Top 25 Entries] =
+    CALCULATE(
+        COUNTROWS('spotify-top-50-world'),
+        'spotify-top-50-world'[position] <= 25
+    )
+
+MEASURE 'spotify-top-50-world'[Top 50 Entries] =
+    CALCULATE(
+        COUNTROWS('spotify-top-50-world'),
+        'spotify-top-50-world'[position] <= 50
+    )
+
+MEASURE 'spotify-top-50-world'[Number 1 Percentage] =
+    DIVIDE(
+        [Number 1 Entries],
+        [Total Chart Entries]
+    )
+
+MEASURE 'spotify-top-50-world'[Top 5 Percentage] =
+    DIVIDE(
+        [Top 5 Entries],
+        [Total Chart Entries]
+    )
+
+MEASURE 'spotify-top-50-world'[Top 10 Percentage] =
+    DIVIDE(
+        [Top 10 Entries],
+        [Total Chart Entries]
+    )
+
+MEASURE 'spotify-top-50-world'[Top 25 Percentage] =
+    DIVIDE(
+        [Top 25 Entries],
+        [Total Chart Entries]
+    )
+
+
+/* =========================================================
+   3. POPULARITY
+   ========================================================= */
+
+MEASURE 'spotify-top-50-world'[Average Popularity] =
+    AVERAGE('spotify-top-50-world'[popularity])
+
+MEASURE 'spotify-top-50-world'[Median Popularity] =
+    MEDIAN('spotify-top-50-world'[popularity])
+
+MEASURE 'spotify-top-50-world'[Maximum Popularity] =
+    MAX('spotify-top-50-world'[popularity])
+
+MEASURE 'spotify-top-50-world'[Minimum Popularity] =
+    MIN('spotify-top-50-world'[popularity])
+
+MEASURE 'spotify-top-50-world'[Highly Popular Entries] =
+    CALCULATE(
+        COUNTROWS('spotify-top-50-world'),
+        'spotify-top-50-world'[popularity] >= 90
+    )
+
+MEASURE 'spotify-top-50-world'[Highly Popular Percentage] =
+    DIVIDE(
+        [Highly Popular Entries],
+        [Total Chart Entries]
+    )
+
+MEASURE 'spotify-top-50-world'[Popular Entries] =
+    CALCULATE(
+        COUNTROWS('spotify-top-50-world'),
+        'spotify-top-50-world'[popularity] >= 80
+    )
+
+MEASURE 'spotify-top-50-world'[Popular Percentage] =
+    DIVIDE(
+        [Popular Entries],
+        [Total Chart Entries]
+    )
+
+MEASURE 'spotify-top-50-world'[Low Popularity Entries] =
+    CALCULATE(
+        COUNTROWS('spotify-top-50-world'),
+        'spotify-top-50-world'[popularity] < 50
+    )
+
+MEASURE 'spotify-top-50-world'[Top 10 Average Popularity] =
+    CALCULATE(
+        AVERAGE('spotify-top-50-world'[popularity]),
+        'spotify-top-50-world'[position] <= 10
+    )
+
+MEASURE 'spotify-top-50-world'[Top 10 Median Popularity] =
+    CALCULATE(
+        MEDIAN('spotify-top-50-world'[popularity]),
+        'spotify-top-50-world'[position] <= 10
+    )
+
+MEASURE 'spotify-top-50-world'[Popularity Position Correlation] =
+    VAR AvgP =
+        AVERAGE('spotify-top-50-world'[position])
+    VAR AvgPop =
+        AVERAGE('spotify-top-50-world'[popularity])
+    VAR Numerator =
+        SUMX(
+            'spotify-top-50-world',
+            (
+                'spotify-top-50-world'[position] - AvgP
+            )
+            *
+            (
+                'spotify-top-50-world'[popularity] - AvgPop
+            )
+        )
+    VAR Denominator =
+        SQRT(
+            SUMX(
+                'spotify-top-50-world',
+                POWER(
+                    'spotify-top-50-world'[position] - AvgP,
+                    2
+                )
+            )
+            *
+            SUMX(
+                'spotify-top-50-world',
+                POWER(
+                    'spotify-top-50-world'[popularity] - AvgPop,
+                    2
+                )
+            )
+        )
+    RETURN
+        DIVIDE(
+            Numerator,
+            Denominator
+        )
+
+
+/* =========================================================
+   4. SONG APPEARANCE / RETENTION
+   ========================================================= */
+
+MEASURE 'spotify-top-50-world'[Average Song Appearances] =
+    DIVIDE(
+        [Total Chart Entries],
+        [Distinct Songs]
+    )
+
+MEASURE 'spotify-top-50-world'[Repeat Song Entries] =
+    [Total Chart Entries] - [Distinct Songs]
+
+MEASURE 'spotify-top-50-world'[Repeat Song Percentage] =
+    DIVIDE(
+        [Repeat Song Entries],
+        [Total Chart Entries]
+    )
+
+MEASURE 'spotify-top-50-world'[One Time Songs] =
+    COUNTROWS(
+        FILTER(
+            VALUES('spotify-top-50-world'[song]),
+            CALCULATE(
+                COUNTROWS('spotify-top-50-world')
+            ) = 1
+        )
+    )
+
+MEASURE 'spotify-top-50-world'[Recurring Songs] =
+    COUNTROWS(
+        FILTER(
+            VALUES('spotify-top-50-world'[song]),
+            CALCULATE(
+                COUNTROWS('spotify-top-50-world')
+            ) > 1
+        )
+    )
+
+MEASURE 'spotify-top-50-world'[Average Song Best Position] =
+    AVERAGEX(
+        VALUES('spotify-top-50-world'[song]),
+        CALCULATE(
+            MIN('spotify-top-50-world'[position])
+        )
+    )
+
+
+/* =========================================================
+   5. ARTIST ANALYSIS
+   ========================================================= */
+
+MEASURE 'spotify-top-50-world'[Average Artist Appearances] =
+    DIVIDE(
+        [Total Chart Entries],
+        [Distinct Artists]
+    )
+
+MEASURE 'spotify-top-50-world'[Repeat Artist Entries] =
+    [Total Chart Entries] - [Distinct Artists]
+
+MEASURE 'spotify-top-50-world'[Artist Concentration] =
+    DIVIDE(
+        [Distinct Artists],
+        [Distinct Songs]
+    )
+
+MEASURE 'spotify-top-50-world'[One Time Artists] =
+    COUNTROWS(
+        FILTER(
+            VALUES('spotify-top-50-world'[artist]),
+            CALCULATE(
+                COUNTROWS('spotify-top-50-world')
+            ) = 1
+        )
+    )
+
+MEASURE 'spotify-top-50-world'[Recurring Artists] =
+    COUNTROWS(
+        FILTER(
+            VALUES('spotify-top-50-world'[artist]),
+            CALCULATE(
+                COUNTROWS('spotify-top-50-world')
+            ) > 1
+        )
+    )
+
+MEASURE 'spotify-top-50-world'[Average Artist Position] =
+    AVERAGEX(
+        VALUES('spotify-top-50-world'[artist]),
+        CALCULATE(
+            AVERAGE('spotify-top-50-world'[position])
+        )
+    )
+
+MEASURE 'spotify-top-50-world'[Average Artist Popularity] =
+    AVERAGEX(
+        VALUES('spotify-top-50-world'[artist]),
+        CALCULATE(
+            AVERAGE('spotify-top-50-world'[popularity])
+        )
+    )
+
+
+/* =========================================================
+   6. DURATION
+   ========================================================= */
+
+MEASURE 'spotify-top-50-world'[Average Duration ms] =
+    AVERAGE('spotify-top-50-world'[duration_ms])
+
+MEASURE 'spotify-top-50-world'[Median Duration ms] =
+    MEDIAN('spotify-top-50-world'[duration_ms])
+
+MEASURE 'spotify-top-50-world'[Average Duration Seconds] =
+    DIVIDE(
+        [Average Duration ms],
+        1000
+    )
+
+MEASURE 'spotify-top-50-world'[Average Duration Minutes] =
+    DIVIDE(
+        [Average Duration ms],
+        60000
+    )
+
+MEASURE 'spotify-top-50-world'[Longest Song Minutes] =
+    DIVIDE(
+        MAX('spotify-top-50-world'[duration_ms]),
+        60000
+    )
+
+MEASURE 'spotify-top-50-world'[Shortest Song Minutes] =
+    DIVIDE(
+        MIN('spotify-top-50-world'[duration_ms]),
+        60000
+    )
+
+MEASURE 'spotify-top-50-world'[Songs Under 3 Minutes] =
+    CALCULATE(
+        COUNTROWS('spotify-top-50-world'),
+        'spotify-top-50-world'[duration_ms] < 180000
+    )
+
+MEASURE 'spotify-top-50-world'[Songs Over 5 Minutes] =
+    CALCULATE(
+        COUNTROWS('spotify-top-50-world'),
+        'spotify-top-50-world'[duration_ms] > 300000
+    )
+
+MEASURE 'spotify-top-50-world'[Short Song Percentage] =
+    DIVIDE(
+        [Songs Under 3 Minutes],
+        [Total Chart Entries]
+    )
+
+MEASURE 'spotify-top-50-world'[Long Song Percentage] =
+    DIVIDE(
+        [Songs Over 5 Minutes],
+        [Total Chart Entries]
+    )
+
+
+/* =========================================================
+   7. EXPLICIT CONTENT
+   ========================================================= */
+
+MEASURE 'spotify-top-50-world'[Explicit Entries] =
+    CALCULATE(
+        COUNTROWS('spotify-top-50-world'),
+        'spotify-top-50-world'[is_explicit] = TRUE()
+    )
+
+MEASURE 'spotify-top-50-world'[Non Explicit Entries] =
+    CALCULATE(
+        COUNTROWS('spotify-top-50-world'),
+        'spotify-top-50-world'[is_explicit] = FALSE()
+    )
+
+MEASURE 'spotify-top-50-world'[Explicit Percentage] =
+    DIVIDE(
+        [Explicit Entries],
+        [Total Chart Entries]
+    )
+
+MEASURE 'spotify-top-50-world'[Explicit Average Popularity] =
+    CALCULATE(
+        AVERAGE('spotify-top-50-world'[popularity]),
+        'spotify-top-50-world'[is_explicit] = TRUE()
+    )
+
+MEASURE 'spotify-top-50-world'[Non Explicit Average Popularity] =
+    CALCULATE(
+        AVERAGE('spotify-top-50-world'[popularity]),
+        'spotify-top-50-world'[is_explicit] = FALSE()
+    )
+
+MEASURE 'spotify-top-50-world'[Explicit Average Position] =
+    CALCULATE(
+        AVERAGE('spotify-top-50-world'[position]),
+        'spotify-top-50-world'[is_explicit] = TRUE()
+    )
+
+MEASURE 'spotify-top-50-world'[Non Explicit Average Position] =
+    CALCULATE(
+        AVERAGE('spotify-top-50-world'[position]),
+        'spotify-top-50-world'[is_explicit] = FALSE()
+    )
+
+
+/* =========================================================
+   8. ALBUM TYPE
+   ========================================================= */
+
+MEASURE 'spotify-top-50-world'[Album Entries] =
+    CALCULATE(
+        COUNTROWS('spotify-top-50-world'),
+        'spotify-top-50-world'[album_type] = "album"
+    )
+
+MEASURE 'spotify-top-50-world'[Single Entries] =
+    CALCULATE(
+        COUNTROWS('spotify-top-50-world'),
+        'spotify-top-50-world'[album_type] = "single"
+    )
+
+MEASURE 'spotify-top-50-world'[Compilation Entries] =
+    CALCULATE(
+        COUNTROWS('spotify-top-50-world'),
+        'spotify-top-50-world'[album_type] = "compilation"
+    )
+
+MEASURE 'spotify-top-50-world'[Album Percentage] =
+    DIVIDE(
+        [Album Entries],
+        [Total Chart Entries]
+    )
+
+MEASURE 'spotify-top-50-world'[Single Percentage] =
+    DIVIDE(
+        [Single Entries],
+        [Total Chart Entries]
+    )
+
+MEASURE 'spotify-top-50-world'[Compilation Percentage] =
+    DIVIDE(
+        [Compilation Entries],
+        [Total Chart Entries]
+    )
+
+MEASURE 'spotify-top-50-world'[Album Average Popularity] =
+    CALCULATE(
+        AVERAGE('spotify-top-50-world'[popularity]),
+        'spotify-top-50-world'[album_type] = "album"
+    )
+
+MEASURE 'spotify-top-50-world'[Single Average Popularity] =
+    CALCULATE(
+        AVERAGE('spotify-top-50-world'[popularity]),
+        'spotify-top-50-world'[album_type] = "single"
+    )
+
+MEASURE 'spotify-top-50-world'[Compilation Average Popularity] =
+    CALCULATE(
+        AVERAGE('spotify-top-50-world'[popularity]),
+        'spotify-top-50-world'[album_type] = "compilation"
+    )
+
+
+/* =========================================================
+   9. ALBUM SIZE
+   ========================================================= */
+
+MEASURE 'spotify-top-50-world'[Average Album Track Count] =
+    AVERAGE('spotify-top-50-world'[total_tracks])
+
+MEASURE 'spotify-top-50-world'[Median Album Track Count] =
+    MEDIAN('spotify-top-50-world'[total_tracks])
+
+MEASURE 'spotify-top-50-world'[Maximum Album Track Count] =
+    MAX('spotify-top-50-world'[total_tracks])
+
+MEASURE 'spotify-top-50-world'[Minimum Album Track Count] =
+    MIN('spotify-top-50-world'[total_tracks])
+
+MEASURE 'spotify-top-50-world'[Large Albums Entries] =
+    CALCULATE(
+        COUNTROWS('spotify-top-50-world'),
+        'spotify-top-50-world'[total_tracks] >= 15
+    )
+
+MEASURE 'spotify-top-50-world'[Single Track Album Entries] =
+    CALCULATE(
+        COUNTROWS('spotify-top-50-world'),
+        'spotify-top-50-world'[total_tracks] = 1
+    )
+
+
+/* =========================================================
+   10. RELEASE DATE
+   Handles:
+   YYYY
+   YYYY-MM
+   YYYY-MM-DD
+   ========================================================= */
+
+MEASURE 'spotify-top-50-world'[Earliest Release Date] =
+VAR ParsedDates =
+    ADDCOLUMNS(
+        'spotify-top-50-world',
+        "__ReleaseDate",
+            VAR R =
+                TRIM(
+                    'spotify-top-50-world'[release_date] & ""
+                )
+            RETURN
+                SWITCH(
+                    TRUE(),
+
+                    /* YYYY-MM-DD */
+                    LEN(R) >= 10 &&
+                    MID(R,5,1) = "-" &&
+                    MID(R,8,1) = "-" &&
+                    NOT ISERROR(
+                        DATE(
+                            VALUE(LEFT(R,4)),
+                            VALUE(MID(R,6,2)),
+                            VALUE(MID(R,9,2))
+                        )
+                    ),
+                        DATE(
+                            VALUE(LEFT(R,4)),
+                            VALUE(MID(R,6,2)),
+                            VALUE(MID(R,9,2))
+                        ),
+
+                    /* YYYY-MM */
+                    LEN(R) = 7 &&
+                    MID(R,5,1) = "-" &&
+                    NOT ISERROR(
+                        DATE(
+                            VALUE(LEFT(R,4)),
+                            VALUE(RIGHT(R,2)),
+                            1
+                        )
+                    ),
+                        DATE(
+                            VALUE(LEFT(R,4)),
+                            VALUE(RIGHT(R,2)),
+                            1
+                        ),
+
+                    /* YYYY */
+                    LEN(R) = 4 &&
+                    NOT ISERROR(
+                        VALUE(R)
+                    ),
+                        DATE(
+                            VALUE(R),
+                            1,
+                            1
+                        ),
+
+                    BLANK()
+                )
+    )
+RETURN
+    MINX(
+        FILTER(
+            ParsedDates,
+            NOT ISBLANK([__ReleaseDate])
+        ),
+        [__ReleaseDate]
+    )
+
+
+MEASURE 'spotify-top-50-world'[Latest Release Date] =
+VAR ParsedDates =
+    ADDCOLUMNS(
+        'spotify-top-50-world',
+        "__ReleaseDate",
+            VAR R =
+                TRIM(
+                    'spotify-top-50-world'[release_date] & ""
+                )
+            RETURN
+                SWITCH(
+                    TRUE(),
+
+                    /* YYYY-MM-DD */
+                    LEN(R) >= 10 &&
+                    MID(R,5,1) = "-" &&
+                    MID(R,8,1) = "-" &&
+                    NOT ISERROR(
+                        DATE(
+                            VALUE(LEFT(R,4)),
+                            VALUE(MID(R,6,2)),
+                            VALUE(MID(R,9,2))
+                        )
+                    ),
+                        DATE(
+                            VALUE(LEFT(R,4)),
+                            VALUE(MID(R,6,2)),
+                            VALUE(MID(R,9,2))
+                        ),
+
+                    /* YYYY-MM */
+                    LEN(R) = 7 &&
+                    MID(R,5,1) = "-" &&
+                    NOT ISERROR(
+                        DATE(
+                            VALUE(LEFT(R,4)),
+                            VALUE(RIGHT(R,2)),
+                            1
+                        )
+                    ),
+                        DATE(
+                            VALUE(LEFT(R,4)),
+                            VALUE(RIGHT(R,2)),
+                            1
+                        ),
+
+                    /* YYYY */
+                    LEN(R) = 4 &&
+                    NOT ISERROR(
+                        VALUE(R)
+                    ),
+                        DATE(
+                            VALUE(R),
+                            1,
+                            1
+                        ),
+
+                    BLANK()
+                )
+    )
+RETURN
+    MAXX(
+        FILTER(
+            ParsedDates,
+            NOT ISBLANK([__ReleaseDate])
+        ),
+        [__ReleaseDate]
+    )
+
+
+MEASURE 'spotify-top-50-world'[Average Release Age Days] =
+VAR ValidRows =
+    FILTER(
+        'spotify-top-50-world',
+        VAR R =
+            TRIM(
+                'spotify-top-50-world'[release_date] & ""
+            )
+
+        VAR ReleaseDate =
+            SWITCH(
+                TRUE(),
+
+                /* YYYY-MM-DD */
+                LEN(R) >= 10 &&
+                MID(R,5,1) = "-" &&
+                MID(R,8,1) = "-",
+                    DATE(
+                        VALUE(LEFT(R,4)),
+                        VALUE(MID(R,6,2)),
+                        VALUE(MID(R,9,2))
+                    ),
+
+                /* YYYY-MM */
+                LEN(R) = 7 &&
+                MID(R,5,1) = "-",
+                    DATE(
+                        VALUE(LEFT(R,4)),
+                        VALUE(RIGHT(R,2)),
+                        1
+                    ),
+
+                /* YYYY */
+                LEN(R) = 4 &&
+                NOT ISERROR(VALUE(R)),
+                    DATE(
+                        VALUE(R),
+                        1,
+                        1
+                    ),
+
+                BLANK()
+            )
+
+        VAR ChartDate =
+            'spotify-top-50-world'[date]
+
+        RETURN
+            NOT ISBLANK(ReleaseDate) &&
+            NOT ISBLANK(ChartDate) &&
+            ReleaseDate <= ChartDate
+    )
+RETURN
+    AVERAGEX(
+        ValidRows,
+        VAR R =
+            TRIM(
+                'spotify-top-50-world'[release_date] & ""
+            )
+
+        VAR ReleaseDate =
+            SWITCH(
+                TRUE(),
+
+                LEN(R) >= 10 &&
+                MID(R,5,1) = "-" &&
+                MID(R,8,1) = "-",
+                    DATE(
+                        VALUE(LEFT(R,4)),
+                        VALUE(MID(R,6,2)),
+                        VALUE(MID(R,9,2))
+                    ),
+
+                LEN(R) = 7 &&
+                MID(R,5,1) = "-",
+                    DATE(
+                        VALUE(LEFT(R,4)),
+                        VALUE(RIGHT(R,2)),
+                        1
+                    ),
+
+                LEN(R) = 4 &&
+                NOT ISERROR(VALUE(R)),
+                    DATE(
+                        VALUE(R),
+                        1,
+                        1
+                    ),
+
+                BLANK()
+            )
+
+        RETURN
+            DATEDIFF(
+                ReleaseDate,
+                'spotify-top-50-world'[date],
+                DAY
+            )
+    )
+
+
+MEASURE 'spotify-top-50-world'[Average Release Age Years] =
+    DIVIDE(
+        [Average Release Age Days],
+        365.25
+    )
+
+MEASURE 'spotify-top-50-world'[Songs Released Last 1 Year] =
+VAR MaxDate =
+    MAX('spotify-top-50-world'[date])
+RETURN
+    COUNTROWS(
+        FILTER(
+            'spotify-top-50-world',
+            VAR R =
+                TRIM(
+                    'spotify-top-50-world'[release_date] & ""
+                )
+            VAR ReleaseDate =
+                SWITCH(
+                    TRUE(),
+
+                    LEN(R) >= 10 &&
+                    MID(R,5,1) = "-" &&
+                    MID(R,8,1) = "-",
+                        DATE(
+                            VALUE(LEFT(R,4)),
+                            VALUE(MID(R,6,2)),
+                            VALUE(MID(R,9,2))
+                        ),
+
+                    LEN(R) = 7 &&
+                    MID(R,5,1) = "-",
+                        DATE(
+                            VALUE(LEFT(R,4)),
+                            VALUE(RIGHT(R,2)),
+                            1
+                        ),
+
+                    LEN(R) = 4 &&
+                    NOT ISERROR(VALUE(R)),
+                        DATE(
+                            VALUE(R),
+                            1,
+                            1
+                        ),
+
+                    BLANK()
+                )
+            RETURN
+                NOT ISBLANK(ReleaseDate) &&
+                ReleaseDate >= MaxDate - 365
+        )
+    )
+
+
+/* =========================================================
+   11. TOP SONGS
+   ========================================================= */
+
+MEASURE 'spotify-top-50-world'[Most Frequent Song] =
+VAR SongTable =
+    TOPN(
+        1,
+        ADDCOLUMNS(
+            VALUES('spotify-top-50-world'[song]),
+            "__Count",
+                CALCULATE(
+                    COUNTROWS('spotify-top-50-world')
+                )
+        ),
+        [__Count],
+        DESC,
+        'spotify-top-50-world'[song],
+        ASC
+    )
+RETURN
+    CONCATENATEX(
+        SongTable,
+        'spotify-top-50-world'[song],
+        ", "
+    )
+
+
+MEASURE 'spotify-top-50-world'[Most Popular Song] =
+VAR SongTable =
+    TOPN(
+        1,
+        ADDCOLUMNS(
+            VALUES('spotify-top-50-world'[song]),
+            "__Popularity",
+                CALCULATE(
+                    AVERAGE('spotify-top-50-world'[popularity])
+                )
+        ),
+        [__Popularity],
+        DESC,
+        'spotify-top-50-world'[song],
+        ASC
+    )
+RETURN
+    CONCATENATEX(
+        SongTable,
+        'spotify-top-50-world'[song],
+        ", "
+    )
+
+
+MEASURE 'spotify-top-50-world'[Best Average Ranked Song] =
+VAR SongTable =
+    TOPN(
+        1,
+        ADDCOLUMNS(
+            VALUES('spotify-top-50-world'[song]),
+            "__AvgPosition",
+                CALCULATE(
+                    AVERAGE('spotify-top-50-world'[position])
+                )
+        ),
+        [__AvgPosition],
+        ASC,
+        'spotify-top-50-world'[song],
+        ASC
+    )
+RETURN
+    CONCATENATEX(
+        SongTable,
+        'spotify-top-50-world'[song],
+        ", "
+    )
+
+
+MEASURE 'spotify-top-50-world'[Top Song Entry Count] =
+VAR SongTable =
+    TOPN(
+        1,
+        ADDCOLUMNS(
+            VALUES('spotify-top-50-world'[song]),
+            "__Count",
+                CALCULATE(
+                    COUNTROWS('spotify-top-50-world')
+                )
+        ),
+        [__Count],
+        DESC,
+        'spotify-top-50-world'[song],
+        ASC
+    )
+RETURN
+    MAXX(
+        SongTable,
+        [__Count]
+    )
+
+
+MEASURE 'spotify-top-50-world'[Top Song Average Popularity] =
+VAR SongTable =
+    TOPN(
+        1,
+        ADDCOLUMNS(
+            VALUES('spotify-top-50-world'[song]),
+            "__Popularity",
+                CALCULATE(
+                    AVERAGE('spotify-top-50-world'[popularity])
+                )
+        ),
+        [__Popularity],
+        DESC,
+        'spotify-top-50-world'[song],
+        ASC
+    )
+RETURN
+    MAXX(
+        SongTable,
+        [__Popularity]
+    )
+
+
+/* =========================================================
+   12. TOP ARTISTS
+   ========================================================= */
+
+MEASURE 'spotify-top-50-world'[Most Frequent Artist] =
+VAR ArtistTable =
+    TOPN(
+        1,
+        ADDCOLUMNS(
+            VALUES('spotify-top-50-world'[artist]),
+            "__Count",
+                CALCULATE(
+                    COUNTROWS('spotify-top-50-world')
+                )
+        ),
+        [__Count],
+        DESC,
+        'spotify-top-50-world'[artist],
+        ASC
+    )
+RETURN
+    CONCATENATEX(
+        ArtistTable,
+        'spotify-top-50-world'[artist],
+        ", "
+    )
+
+
+MEASURE 'spotify-top-50-world'[Best Average Ranked Artist] =
+VAR ArtistTable =
+    TOPN(
+        1,
+        ADDCOLUMNS(
+            VALUES('spotify-top-50-world'[artist]),
+            "__AvgPosition",
+                CALCULATE(
+                    AVERAGE('spotify-top-50-world'[position])
+                )
+        ),
+        [__AvgPosition],
+        ASC,
+        'spotify-top-50-world'[artist],
+        ASC
+    )
+RETURN
+    CONCATENATEX(
+        ArtistTable,
+        'spotify-top-50-world'[artist],
+        ", "
+    )
+
+
+MEASURE 'spotify-top-50-world'[Most Popular Artist] =
+VAR ArtistTable =
+    TOPN(
+        1,
+        ADDCOLUMNS(
+            VALUES('spotify-top-50-world'[artist]),
+            "__Popularity",
+                CALCULATE(
+                    AVERAGE('spotify-top-50-world'[popularity])
+                )
+        ),
+        [__Popularity],
+        DESC,
+        'spotify-top-50-world'[artist],
+        ASC
+    )
+RETURN
+    CONCATENATEX(
+        ArtistTable,
+        'spotify-top-50-world'[artist],
+        ", "
+    )
+
+
+MEASURE 'spotify-top-50-world'[Top Artist Entry Count] =
+VAR ArtistTable =
+    TOPN(
+        1,
+        ADDCOLUMNS(
+            VALUES('spotify-top-50-world'[artist]),
+            "__Count",
+                CALCULATE(
+                    COUNTROWS('spotify-top-50-world')
+                )
+        ),
+        [__Count],
+        DESC,
+        'spotify-top-50-world'[artist],
+        ASC
+    )
+RETURN
+    MAXX(
+        ArtistTable,
+        [__Count]
+    )
+
+
+/* =========================================================
+   13. CHART CONSISTENCY
+   ========================================================= */
+
+MEASURE 'spotify-top-50-world'[Average Position of Top 10] =
+    CALCULATE(
+        AVERAGE('spotify-top-50-world'[position]),
+        'spotify-top-50-world'[position] <= 10
+    )
+
+MEASURE 'spotify-top-50-world'[Average Position of Top 25] =
+    CALCULATE(
+        AVERAGE('spotify-top-50-world'[position]),
+        'spotify-top-50-world'[position] <= 25
+    )
+
+MEASURE 'spotify-top-50-world'[Average Position of Top 50] =
+    CALCULATE(
+        AVERAGE('spotify-top-50-world'[position]),
+        'spotify-top-50-world'[position] <= 50
+    )
+
+MEASURE 'spotify-top-50-world'[Top 10 Popularity Gap] =
+    [Top 10 Average Popularity] -
+    [Average Popularity]
+
+MEASURE 'spotify-top-50-world'[Explicit Top 10 Entries] =
+    CALCULATE(
+        COUNTROWS('spotify-top-50-world'),
+        'spotify-top-50-world'[position] <= 10,
+        'spotify-top-50-world'[is_explicit] = TRUE()
+    )
+
+MEASURE 'spotify-top-50-world'[Explicit Top 10 Percentage] =
+    DIVIDE(
+        [Explicit Top 10 Entries],
+        [Top 10 Entries]
+    )
+
+
+/* =========================================================
+   14. DATA QUALITY
+   ========================================================= */
+
+MEASURE 'spotify-top-50-world'[Blank Song Entries] =
+    COUNTROWS(
+        FILTER(
+            'spotify-top-50-world',
+            ISBLANK(
+                'spotify-top-50-world'[song]
+            )
+            ||
+            TRIM(
+                'spotify-top-50-world'[song]
+            ) = ""
+        )
+    )
+
+MEASURE 'spotify-top-50-world'[Blank Artist Entries] =
+    COUNTROWS(
+        FILTER(
+            'spotify-top-50-world',
+            ISBLANK(
+                'spotify-top-50-world'[artist]
+            )
+            ||
+            TRIM(
+                'spotify-top-50-world'[artist]
+            ) = ""
+        )
+    )
+
+MEASURE 'spotify-top-50-world'[Blank Cover URL Entries] =
+    COUNTROWS(
+        FILTER(
+            'spotify-top-50-world',
+            ISBLANK(
+                'spotify-top-50-world'[album_cover_url]
+            )
+        )
+    )
+
+
+/* =========================================================
+   15. TIME PERIOD KPIs
+   ========================================================= */
+
+MEASURE 'spotify-top-50-world'[First Chart Date] =
+    MIN('spotify-top-50-world'[date])
+
+MEASURE 'spotify-top-50-world'[Last Chart Date] =
+    MAX('spotify-top-50-world'[date])
+
+MEASURE 'spotify-top-50-world'[Days Since First Chart] =
+    DATEDIFF(
+        [First Chart Date],
+        [Last Chart Date],
+        DAY
+    )
+
+MEASURE 'spotify-top-50-world'[Average Daily Popularity] =
+    AVERAGEX(
+        VALUES('spotify-top-50-world'[date]),
+        CALCULATE(
+            AVERAGE('spotify-top-50-world'[popularity])
+        )
+    )
+
+MEASURE 'spotify-top-50-world'[Average Daily Position] =
+    AVERAGEX(
+        VALUES('spotify-top-50-world'[date]),
+        CALCULATE(
+            AVERAGE('spotify-top-50-world'[position])
+        )
+    )
+
+
+/* =========================================================
+   16. COMBINED PERFORMANCE KPIs
+   ========================================================= */
+
+MEASURE 'spotify-top-50-world'[High Popularity Top 10 Entries] =
+    CALCULATE(
+        COUNTROWS('spotify-top-50-world'),
+        'spotify-top-50-world'[position] <= 10,
+        'spotify-top-50-world'[popularity] >= 90
+    )
+
+MEASURE 'spotify-top-50-world'[High Popularity Top 10 Percentage] =
+    DIVIDE(
+        [High Popularity Top 10 Entries],
+        [Top 10 Entries]
+    )
+
+MEASURE 'spotify-top-50-world'[Short Songs Top 10] =
+    CALCULATE(
+        COUNTROWS('spotify-top-50-world'),
+        'spotify-top-50-world'[position] <= 10,
+        'spotify-top-50-world'[duration_ms] < 180000
+    )
+
+MEASURE 'spotify-top-50-world'[Long Songs Top 10] =
+    CALCULATE(
+        COUNTROWS('spotify-top-50-world'),
+        'spotify-top-50-world'[position] <= 10,
+        'spotify-top-50-world'[duration_ms] > 300000
+    )
+
+MEASURE 'spotify-top-50-world'[Average Album Tracks Top 10] =
+    CALCULATE(
+        AVERAGE('spotify-top-50-world'[total_tracks]),
+        'spotify-top-50-world'[position] <= 10
+    )
+
+
+/* =========================================================
+   FINAL SUMMARY OUTPUT
+   ========================================================= */
+
+EVALUATE
+
+SUMMARIZECOLUMNS(
+
+    /* Basic */
+    "Total Chart Entries",
+        [Total Chart Entries],
+
+    "Chart Days",
+        [Chart Days],
+
+    "Average Entries Per Day",
+        [Average Entries Per Day],
+
+    "Distinct Songs",
+        [Distinct Songs],
+
+    "Distinct Artists",
+        [Distinct Artists],
+
+    "Distinct Albums",
+        [Distinct Albums],
+
+    "Songs Per Artist",
+        [Songs Per Artist],
+
+    "Artists Per Song",
+        [Artists Per Song],
+
+    "Chart Coverage Days",
+        [Chart Coverage Days],
+
+
+    /* Position */
+    "Average Chart Position",
+        [Average Chart Position],
+
+    "Median Chart Position",
+        [Median Chart Position],
+
+    "Best Chart Position",
+        [Best Chart Position],
+
+    "Worst Chart Position",
+        [Worst Chart Position],
+
+    "Number 1 Entries",
+        [Number 1 Entries],
+
+    "Top 5 Entries",
+        [Top 5 Entries],
+
+    "Top 10 Entries",
+        [Top 10 Entries],
+
+    "Top 25 Entries",
+        [Top 25 Entries],
+
+    "Top 50 Entries",
+        [Top 50 Entries],
+
+    "Number 1 Percentage",
+        [Number 1 Percentage],
+
+    "Top 5 Percentage",
+        [Top 5 Percentage],
+
+    "Top 10 Percentage",
+        [Top 10 Percentage],
+
+    "Top 25 Percentage",
+        [Top 25 Percentage],
+
+
+    /* Popularity */
+    "Average Popularity",
+        [Average Popularity],
+
+    "Median Popularity",
+        [Median Popularity],
+
+    "Maximum Popularity",
+        [Maximum Popularity],
+
+    "Minimum Popularity",
+        [Minimum Popularity],
+
+    "Highly Popular Entries",
+        [Highly Popular Entries],
+
+    "Highly Popular Percentage",
+        [Highly Popular Percentage],
+
+    "Popular Entries",
+        [Popular Entries],
+
+    "Popular Percentage",
+        [Popular Percentage],
+
+    "Low Popularity Entries",
+        [Low Popularity Entries],
+
+    "Top 10 Average Popularity",
+        [Top 10 Average Popularity],
+
+    "Top 10 Median Popularity",
+        [Top 10 Median Popularity],
+
+    "Popularity Position Correlation",
+        [Popularity Position Correlation],
+
+
+    /* Songs */
+    "Average Song Appearances",
+        [Average Song Appearances],
+
+    "Repeat Song Entries",
+        [Repeat Song Entries],
+
+    "Repeat Song Percentage",
+        [Repeat Song Percentage],
+
+    "One Time Songs",
+        [One Time Songs],
+
+    "Recurring Songs",
+        [Recurring Songs],
+
+    "Average Song Best Position",
+        [Average Song Best Position],
+
+
+    /* Artists */
+    "Average Artist Appearances",
+        [Average Artist Appearances],
+
+    "Repeat Artist Entries",
+        [Repeat Artist Entries],
+
+    "Artist Concentration",
+        [Artist Concentration],
+
+    "One Time Artists",
+        [One Time Artists],
+
+    "Recurring Artists",
+        [Recurring Artists],
+
+    "Average Artist Position",
+        [Average Artist Position],
+
+    "Average Artist Popularity",
+        [Average Artist Popularity],
+
+
+    /* Duration */
+    "Average Duration ms",
+        [Average Duration ms],
+
+    "Median Duration ms",
+        [Median Duration ms],
+
+    "Average Duration Seconds",
+        [Average Duration Seconds],
+
+    "Average Duration Minutes",
+        [Average Duration Minutes],
+
+    "Longest Song Minutes",
+        [Longest Song Minutes],
+
+    "Shortest Song Minutes",
+        [Shortest Song Minutes],
+
+    "Songs Under 3 Minutes",
+        [Songs Under 3 Minutes],
+
+    "Songs Over 5 Minutes",
+        [Songs Over 5 Minutes],
+
+    "Short Song Percentage",
+        [Short Song Percentage],
+
+    "Long Song Percentage",
+        [Long Song Percentage],
+
+
+    /* Explicit */
+    "Explicit Entries",
+        [Explicit Entries],
+
+    "Non Explicit Entries",
+        [Non Explicit Entries],
+
+    "Explicit Percentage",
+        [Explicit Percentage],
+
+    "Explicit Average Popularity",
+        [Explicit Average Popularity],
+
+    "Non Explicit Average Popularity",
+        [Non Explicit Average Popularity],
+
+    "Explicit Average Position",
+        [Explicit Average Position],
+
+    "Non Explicit Average Position",
+        [Non Explicit Average Position],
+
+
+    /* Album Type */
+    "Album Entries",
+        [Album Entries],
+
+    "Single Entries",
+        [Single Entries],
+
+    "Compilation Entries",
+        [Compilation Entries],
+
+    "Album Percentage",
+        [Album Percentage],
+
+    "Single Percentage",
+        [Single Percentage],
+
+    "Compilation Percentage",
+        [Compilation Percentage],
+
+    "Album Average Popularity",
+        [Album Average Popularity],
+
+    "Single Average Popularity",
+        [Single Average Popularity],
+
+    "Compilation Average Popularity",
+        [Compilation Average Popularity],
+
+
+    /* Album Size */
+    "Average Album Track Count",
+        [Average Album Track Count],
+
+    "Median Album Track Count",
+        [Median Album Track Count],
+
+    "Maximum Album Track Count",
+        [Maximum Album Track Count],
+
+    "Minimum Album Track Count",
+        [Minimum Album Track Count],
+
+    "Large Albums Entries",
+        [Large Albums Entries],
+
+    "Single Track Album Entries",
+        [Single Track Album Entries],
+
+
+    /* Release */
+    "Earliest Release Date",
+        [Earliest Release Date],
+
+    "Latest Release Date",
+        [Latest Release Date],
+
+    "Average Release Age Days",
+        [Average Release Age Days],
+
+    "Average Release Age Years",
+        [Average Release Age Years],
+
+    "Songs Released Last 1 Year",
+        [Songs Released Last 1 Year],
+
+
+    /* Top Songs */
+    "Most Frequent Song",
+        [Most Frequent Song],
+
+    "Most Popular Song",
+        [Most Popular Song],
+
+    "Best Average Ranked Song",
+        [Best Average Ranked Song],
+
+    "Top Song Entry Count",
+        [Top Song Entry Count],
+
+    "Top Song Average Popularity",
+        [Top Song Average Popularity],
+
+
+    /* Top Artists */
+    "Most Frequent Artist",
+        [Most Frequent Artist],
+
+    "Best Average Ranked Artist",
+        [Best Average Ranked Artist],
+
+    "Most Popular Artist",
+        [Most Popular Artist],
+
+    "Top Artist Entry Count",
+        [Top Artist Entry Count],
+
+
+    /* Consistency */
+    "Average Position Top 10",
+        [Average Position of Top 10],
+
+    "Average Position Top 25",
+        [Average Position of Top 25],
+
+    "Average Position Top 50",
+        [Average Position of Top 50],
+
+    "Top 10 Popularity Gap",
+        [Top 10 Popularity Gap],
+
+    "Explicit Top 10 Entries",
+        [Explicit Top 10 Entries],
+
+    "Explicit Top 10 Percentage",
+        [Explicit Top 10 Percentage],
+
+
+    /* Data Quality */
+    "Blank Song Entries",
+        [Blank Song Entries],
+
+    "Blank Artist Entries",
+        [Blank Artist Entries],
+
+    "Blank Cover URL Entries",
+        [Blank Cover URL Entries],
+
+
+    /* Time */
+    "First Chart Date",
+        [First Chart Date],
+
+    "Last Chart Date",
+        [Last Chart Date],
+
+    "Days Since First Chart",
+        [Days Since First Chart],
+
+    "Average Daily Popularity",
+        [Average Daily Popularity],
+
+    "Average Daily Position",
+        [Average Daily Position],
+
+
+    /* Combined */
+    "High Popularity Top 10 Entries",
+        [High Popularity Top 10 Entries],
+
+    "High Popularity Top 10 Percentage",
+        [High Popularity Top 10 Percentage],
+
+    "Short Songs Top 10",
+        [Short Songs Top 10],
+
+    "Long Songs Top 10",
+        [Long Songs Top 10],
+
+    "Average Album Tracks Top 10",
+        [Average Album Tracks Top 10]
+)
